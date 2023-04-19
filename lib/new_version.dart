@@ -160,7 +160,7 @@ class NewVersion {
     }
     final document = parse(response.body);
 
-    String storeVersion = '0.0.0';
+    String? storeVersion = '0.0.0';
     String? releaseNotes;
 
     final additionalInfoElements = document.getElementsByClassName('hAyfc');
@@ -179,30 +179,27 @@ class NewVersion {
           ?.querySelector('.DWPxHb')
           ?.text;
     } else {
-      final scriptElements = document.getElementsByTagName('script');
-      final infoScriptElement = scriptElements.firstWhere(
-        (elm) => elm.text.contains('key: \'ds:4\''),
-      );
+      final regexp =
+          RegExp(r'\[\[\[\"(\d+\.\d+(\.[a-z]+)?(\.([^"]|\\")*)?)\"\]\]');
+      storeVersion = regexp.firstMatch(response.body)?.group(1);
 
-      final param = infoScriptElement.text
-          .substring(20, infoScriptElement.text.length - 2)
-          .replaceAll('key:', '"key":')
-          .replaceAll('hash:', '"hash":')
-          .replaceAll('data:', '"data":')
-          .replaceAll('sideChannel:', '"sideChannel":')
-          .replaceAll('\'', '"');
-      final parsed = json.decode(param);
-      final data = parsed['data'];
+      final regexpRelease =
+          RegExp(r'\[(null,)\[(null,)\"((\.[a-z]+)?(([^"]|\\")*)?)\"\]\]');
 
-      storeVersion = data[1][2][140][0][0][0];
-      releaseNotes = data[1][2][144][1][1];
+      releaseNotes = regexpRelease.firstMatch(response.body)?.group(3);
     }
+
+    final expRemoveSc = RegExp(
+      r"\\u003c[A-Za-z]{1,10}\\u003e",
+      multiLine: true,
+      caseSensitive: true,
+    );
 
     return VersionStatus(
       localVersion: _getCleanVersion(packageInfo.version),
-      storeVersion: _getCleanVersion(forceAppVersion ?? storeVersion),
+      storeVersion: _getCleanVersion(forceAppVersion ?? storeVersion ?? ''),
       appStoreLink: uri.toString(),
-      releaseNotes: releaseNotes,
+      releaseNotes: releaseNotes?.replaceAll(expRemoveSc, ''),
     );
   }
 
