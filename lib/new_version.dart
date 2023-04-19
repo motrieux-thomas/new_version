@@ -51,7 +51,7 @@ class VersionStatus {
     return false;
   }
 
-  VersionStatus._({
+  VersionStatus({
     required this.localVersion,
     required this.storeVersion,
     required this.appStoreLink,
@@ -138,7 +138,7 @@ class NewVersion {
       debugPrint('Can\'t find an app in the App Store with the id: $id');
       return null;
     }
-    return VersionStatus._(
+    return VersionStatus(
       localVersion: _getCleanVersion(packageInfo.version),
       storeVersion:
           _getCleanVersion(forceAppVersion ?? jsonObj['results'][0]['version']),
@@ -198,7 +198,7 @@ class NewVersion {
       releaseNotes = data[1][2][144][1][1];
     }
 
-    return VersionStatus._(
+    return VersionStatus(
       localVersion: _getCleanVersion(packageInfo.version),
       storeVersion: _getCleanVersion(forceAppVersion ?? storeVersion),
       appStoreLink: uri.toString(),
